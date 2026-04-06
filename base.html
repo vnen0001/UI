@@ -1,0 +1,80 @@
+{#
+    layouts/base.html — Master layout for all authenticated pages.
+
+    Every page that requires login extends this template.
+    It provides: sidebar navigation, header, main content area,
+    toast container, and all shared CSS/JS.
+
+    Child templates override {% block content %} and
+    set the page_title variable.
+
+    How HTMX navigation works with this layout:
+    1. First page load: browser gets full HTML (base + sidebar + content)
+    2. Sidebar click: HTMX requests the new page
+    3. The route checks HX-Request header:
+       - If present: returns ONLY the content (partial template)
+       - If absent: returns full page (this base + content)
+    4. HTMX swaps just #main-content, sidebar stays untouched
+    5. hx-push-url updates the URL bar so refresh/bookmark works
+#}
+
+<!DOCTYPE html>
+<html lang="en" data-theme="shoppervisor">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ page_title | default("Dashboard") }} — Shoppervisor{% endblock %}</title>
+
+    {# Compiled Tailwind + DaisyUI — built from static/css/input.css #}
+    <link rel="stylesheet" href="/static/css/output.css">
+
+    {# Theme CSS — custom properties for brand colors and layout dimensions #}
+    <link rel="stylesheet" href="/static/css/theme.css">
+
+    {# Per-company brand color injected as CSS variable #}
+    <style>
+        :root { --brand-color: {{ user.company.brand_color | default("#2b5ce6") }}; }
+        body { font-family: 'DM Sans', system-ui, -apple-system, sans-serif; }
+    </style>
+
+    {# HTMX — handles all dynamic behavior #}
+    <script src="https://unpkg.com/htmx.org@2.0.4" integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+" crossorigin="anonymous"></script>
+
+    {# Google Fonts — DM Sans #}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    {% block head %}{% endblock %}
+</head>
+
+<body class="bg-base-200 text-base-content h-screen overflow-hidden antialiased">
+
+    <div class="flex h-screen">
+
+        {# ── Sidebar ── #}
+        {% include "layouts/components/sidebar.html" %}
+
+        {# ── Main area (header + content) ── #}
+        <div class="flex-1 flex flex-col overflow-hidden">
+
+            {# ── Header ── #}
+            {% include "layouts/components/header.html" %}
+
+            {# ── Main content area — HTMX swaps happen here ── #}
+            <main id="main-content" class="flex-1 overflow-y-auto p-6">
+                {% block content %}{% endblock %}
+            </main>
+
+        </div>
+    </div>
+
+    {# ── Toast notification container ── #}
+    <div id="toast-container" class="fixed bottom-4 right-4 z-50 space-y-2"></div>
+
+    {# ── App JS — nav state, toasts, HTMX config ── #}
+    <script src="/static/js/app.js"></script>
+
+    {% block scripts %}{% endblock %}
+
+</body>
+</html>

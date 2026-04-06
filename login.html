@@ -1,0 +1,70 @@
+{#
+    public/login.html — Login page.
+
+    Simple centered card with Microsoft sign-in button.
+    Uses layouts/base_minimal.html (no sidebar — user isn't authenticated yet).
+
+    Error messages are shown when the callback fails:
+    - ?error=missing_state → auth flow issue
+    - ?error=expired → took too long at Microsoft login
+    - ?error=access_denied → user not in system or deactivated
+
+    These are set in api/auth.py callback route.
+#}
+
+{% extends "layouts/base_minimal.html" %}
+{% from "layouts/components/icons.html" import icon_microsoft %}
+
+{% block title %}Sign in — Shoppervisor{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen px-4">
+
+    <div class="w-full max-w-sm">
+
+        {# Logo and branding #}
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-600 mb-4">
+                <svg class="w-6 h-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M3 3v18h18"/><path d="M7 16l4-8 4 5 5-9"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900">Shoppervisor</h1>
+            <p class="text-gray-500 mt-1 text-sm">Sign in with your company account</p>
+        </div>
+
+        {# Login card #}
+        <div class="bg-white rounded-xl border border-gray-200 shadow-sm p-8">
+
+            {# Error message — shown when callback redirects with ?error= #}
+            {% if error_message %}
+            <div class="mb-6 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-sm text-red-700">
+                {{ error_message }}
+            </div>
+            {% endif %}
+
+            {# Microsoft sign-in button
+               This links to /api/auth/login which redirects to Microsoft.
+               Styled to match Microsoft's own sign-in button guidelines.
+            #}
+            <a href="/api/auth/login"
+               class="flex items-center justify-center gap-3 w-full bg-white border border-gray-300 rounded-lg px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all">
+                {{ icon_microsoft(class="w-5 h-5 shrink-0") }}
+                Sign in with Microsoft
+            </a>
+
+            <p class="mt-6 text-center text-xs text-gray-400">
+                Don't have access?
+                <a href="/request-access" class="text-blue-600 hover:text-blue-700">Request an invite</a>
+            </p>
+        </div>
+
+        {# Footer #}
+        <p class="text-center text-xs text-gray-400 mt-6">
+            &copy; {{ now().year if now is defined else "2026" }} FMCG Analytics
+        </p>
+
+    </div>
+
+</div>
+{% endblock %}

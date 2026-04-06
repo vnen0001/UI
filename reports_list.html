@@ -1,0 +1,59 @@
+{#
+    partials/reports_list.html — Report cards grid.
+
+    This partial is the CONTENT ONLY — no sidebar, no header.
+    Used two ways:
+      1. Included by pages/reports.html for full page loads
+      2. Returned directly for HTMX navigation (sidebar click)
+
+    Why a separate partial? When someone clicks "Dashboard" in the sidebar,
+    HTMX only needs the main content area, not the full page with sidebar.
+    The route checks HX-Request and returns this partial directly.
+#}
+
+{% from "layouts/components/icons.html" import icon_document, icon_arrow_right %}
+
+<div class="max-w-5xl">
+    {# Page heading #}
+    <div class="mb-6">
+        <h2 class="text-2xl font-semibold text-gray-900">Reports</h2>
+        <p class="text-sm text-gray-500 mt-1">Select a report to view</p>
+    </div>
+
+    {# Report cards grid #}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for report in reports %}
+        <a href="/reports/{{ report.report_id }}"
+           hx-get="/reports/{{ report.report_id }}"
+           hx-target="#main-content"
+           hx-swap="innerHTML"
+           hx-push-url="true"
+           class="group bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md hover:border-blue-200 transition-all duration-200">
+
+            {# Icon + title #}
+            <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+                    {{ icon_document(class="w-5 h-5 text-blue-600") }}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <h3 class="font-semibold text-sm text-gray-900 group-hover:text-blue-600 transition-colors">
+                        {{ report.report_name }}
+                    </h3>
+                    {% if report.description %}
+                    <p class="text-xs text-gray-500 mt-1 line-clamp-2">{{ report.description }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {# Footer #}
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                <span class="text-xs text-gray-400">{{ user.company.name }}</span>
+                <div class="flex items-center gap-1 text-xs text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span>Open</span>
+                    {{ icon_arrow_right(class="w-3 h-3") }}
+                </div>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>

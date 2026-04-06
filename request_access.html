@@ -1,0 +1,43 @@
+{#
+    public/request_access.html — Access request page.
+
+    Shown when someone authenticates with Microsoft but their email
+    is not in your users table at all. This means they weren't invited.
+
+    This is a simple static page — no form submission yet.
+    For v1, you just tell them to contact their admin.
+    Later, you could add an actual form that emails you.
+#}
+
+{% extends "layouts/base_minimal.html" %}
+{% from "layouts/components/icons.html" import icon_shield, icon_envelope %}
+
+{% block title %}Request Access — Shoppervisor{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen px-4">
+    <div class="text-center max-w-md">
+        <div class="w-16 h-16 rounded-full bg-amber-50 flex items-center justify-center mx-auto mb-6">
+            {{ icon_shield(class="w-8 h-8 text-amber-500") }}
+        </div>
+        <h1 class="text-2xl font-semibold text-gray-900 mb-2">Access not granted</h1>
+        <p class="text-gray-500 text-sm leading-relaxed mb-8">
+            Your Microsoft account was verified, but you don't have access
+            to Shoppervisor yet. If you believe this is a mistake, contact
+            your company's portal administrator or reach out to us.
+        </p>
+
+        <a href="mailto:support@shoppervisor.com"
+           class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+            {{ icon_envelope(class="w-4 h-4") }}
+            Contact support
+        </a>
+
+        <div class="mt-8">
+            <a href="/" class="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+                &larr; Back to home
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

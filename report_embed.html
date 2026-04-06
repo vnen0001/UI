@@ -1,0 +1,96 @@
+{#
+    partials/report_embed.html — Power BI embed container.
+
+    Returned for HTMX navigation (sidebar click on a report).
+    Contains the embed div and an inline script that initializes it.
+
+    When HTMX swaps this into #main-content, the inline script
+    runs and embeds the Power BI report. The Power BI JS SDK
+    must already be loaded on the page (from report_view.html
+    or loaded dynamically).
+
+    Note: -m-6 removes the parent's padding so the embed fills
+    edge-to-edge. -mb-6 is not needed since overflow is hidden.
+#}
+
+<div class="-m-6 h-[calc(100vh-4rem)]">
+
+    {# Report title bar #}
+    <div class="h-12 px-6 flex items-center border-b border-gray-200 bg-white">
+        <h2 class="text-sm font-semibold text-gray-900">{{ report.report_name }}</h2>
+        {% if report.description %}
+        <span class="ml-3 text-xs text-gray-400">{{ report.description }}</span>
+        {% endif %}
+    </div>
+
+    {# Power BI embed container — fills remaining height #}
+    <div id="report-embed-container"
+         class="w-full bg-white"
+         style="height: calc(100vh - 4rem - 3rem);">
+
+        {# Loading state — shown until Power BI SDK replaces it #}
+        <div id="embed-loading" class="flex items-center justify-center h-full">
+            <div class="text-center">
+                <div class="inline-block w-8 h-8 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+                <p class="text-sm text-gray-500 mt-3">Loading report...</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{#
+    Inline script for HTMX navigation.
+    When this partial is swapped in via HTMX, we need to:
+    1. Check if Power BI SDK is loaded
+    2. If not, load it dynamically
+    3. Embed the report
+
+    For full page loads, the script in report_view.html handles this.
+    For HTMX swaps, this inline script handles it.
+#}
+<script>
+    (function() {
+        function doEmbed() {
+            var container = document.getElementById('report-embed-container');
+            if (!container || typeof powerbi === 'undefined') return;
+
+            // Remove loading state
+            var loading = document.getElementById('embed-loading');
+            if (loading) loading.remove();
+
+            var config = {
+                type: 'report',
+                id: '{{ embed_config.report_id }}',
+                embedUrl: '{{ embed_config.embed_url }}',
+                accessToken: '{{ embed_config.embed_token }}',
+                tokenType: powerbi.models.TokenType.Embed,
+                settings: {
+                    panes: {
+                        filters: { visible: false },
+                        pageNavigation: { visible: true }
+                    },
+                    background: powerbi.models.BackgroundType.Transparent,
+                    layoutType: powerbi.models.LayoutType.Custom,
+                    customLayout: {
+                        displayOption: powerbi.models.DisplayOption.FitToPage
+                    }
+                }
+            };
+
+            var report = powerbi.embed(container, config);
+            setupReportTracking(report, '{{ report.report_id }}');
+        }
+
+        // Check if Power BI SDK is already loaded
+        if (typeof powerbi !== 'undefined') {
+            doEmbed();
+        } else {
+            // Load it dynamically (first report view via HTMX navigation)
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/powerbi-client/dist/powerbi.min.js';
+            script.onload = doEmbed;
+            document.head.appendChild(script);
+        }
+    })();
+</script>

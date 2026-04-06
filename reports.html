@@ -1,0 +1,19 @@
+{#
+    app/reports.html — Reports dashboard.
+
+    Shows all reports the user's company has access to as cards.
+    Extends layouts/base.html which provides sidebar + header.
+
+    When HTMX navigates here, only the partials/reports_list.html
+    content is returned (the route checks HX-Request header).
+    When loaded directly (bookmark/refresh), the full page renders.
+#}
+
+{% extends "layouts/base.html" %}
+
+{% set page_title = "My Reports" %}
+{% block title %}Reports — Shoppervisor{% endblock %}
+
+{% block content %}
+    {% include "partials/reports_list.html" %}
+{% endblock %}

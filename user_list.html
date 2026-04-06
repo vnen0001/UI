@@ -1,0 +1,105 @@
+{#
+    partials/user_list.html — User table rows.
+
+    Rendered inside the <tbody> of the users table.
+    Returned by:
+    - GET /admin/users (with ?company_id filter)
+    - POST /api/admin/invite (after creating a user)
+    - POST /api/admin/users/{id}/deactivate
+    - POST /api/admin/users/{id}/reactivate
+
+    Each action returns this partial, HTMX swaps it into
+    #user-table-body, and the table updates instantly.
+
+    Status badges:
+    - active → green
+    - invited → amber (waiting for first login)
+    - deactivated → red
+#}
+
+{% for u in users %}
+<tr class="hover:bg-gray-50 transition-colors">
+    {# User info #}
+    <td class="px-5 py-3.5">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-600 shrink-0">
+                {{ u.display_name[0].upper() if u.display_name else u.email[0].upper() }}
+            </div>
+            <div>
+                <div class="text-sm font-medium text-gray-900">{{ u.display_name or "—" }}</div>
+                <div class="text-xs text-gray-500">{{ u.email }}</div>
+            </div>
+        </div>
+    </td>
+
+    {# Company (super_admin only) #}
+    {% if user.is_super_admin %}
+    <td class="px-5 py-3.5">
+        <span class="text-sm text-gray-600">{{ u.company.name if u.company else "—" }}</span>
+    </td>
+    {% endif %}
+
+    {# Role #}
+    <td class="px-5 py-3.5">
+        <span class="text-sm text-gray-600 capitalize">
+            {{ u.role | replace("_", " ") }}
+        </span>
+    </td>
+
+    {# Status badge #}
+    <td class="px-5 py-3.5">
+        {% if u.status == "active" %}
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+            Active
+        </span>
+        {% elif u.status == "invited" %}
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            Invited
+        </span>
+        {% elif u.status == "deactivated" %}
+        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-700 border border-red-200">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
+            Deactivated
+        </span>
+        {% endif %}
+    </td>
+
+    {# First login #}
+    <td class="px-5 py-3.5">
+        <span class="text-sm text-gray-500">
+            {% if u.first_login_at %}
+                {{ u.first_login_at.strftime("%d %b %Y") }}
+            {% else %}
+                —
+            {% endif %}
+        </span>
+    </td>
+
+    {# Actions #}
+    <td class="px-5 py-3.5 text-right">
+        {# Don't show actions for the current user (can't deactivate yourself) #}
+        {% if u.id != user.id %}
+            {% if u.status in ["active", "invited"] %}
+            <button hx-post="/api/admin/users/{{ u.id }}/deactivate"
+                    hx-target="#user-table-body"
+                    hx-swap="innerHTML"
+                    hx-confirm="Deactivate {{ u.display_name or u.email }}? They will lose access immediately."
+                    class="text-xs text-red-600 hover:text-red-800 font-medium transition-colors">
+                Deactivate
+            </button>
+            {% elif u.status == "deactivated" %}
+            <button hx-post="/api/admin/users/{{ u.id }}/reactivate"
+                    hx-target="#user-table-body"
+                    hx-swap="innerHTML"
+                    class="text-xs text-blue-600 hover:text-blue-800 font-medium transition-colors">
+                Reactivate
+            </button>
+            {% endif %}
+        {% else %}
+            <span class="text-xs text-gray-400">You</span>
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}

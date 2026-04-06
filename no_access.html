@@ -1,0 +1,38 @@
+{#
+    app/no_access.html — Empty state when user has no reports.
+
+    Shown when the user authenticates successfully but their company
+    has no reports assigned. This shouldn't happen in normal operation
+    — it means someone was invited but the admin forgot to assign reports.
+#}
+
+{% extends "layouts/base_minimal.html" %}
+{% from "layouts/components/icons.html" import icon_lock %}
+
+{% block title %}No Access — Shoppervisor{% endblock %}
+
+{% block content %}
+<div class="flex items-center justify-center min-h-screen px-4">
+    <div class="text-center max-w-md">
+        <div class="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-6">
+            {{ icon_lock(class="w-8 h-8 text-gray-400") }}
+        </div>
+        <h1 class="text-2xl font-semibold text-gray-900 mb-2">No reports available</h1>
+        <p class="text-gray-500 text-sm leading-relaxed mb-8">
+            Your account is active but no reports have been assigned to
+            <strong>{{ user.company.name }}</strong> yet. Contact your administrator
+            to get access.
+        </p>
+        <div class="flex items-center justify-center gap-4">
+            <a href="mailto:support@shoppervisor.com"
+               class="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors">
+                Contact support
+            </a>
+            <a href="/api/auth/logout"
+               class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                Sign out
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
