@@ -1,0 +1,27 @@
+{#
+    layouts/components/header.html — Top header bar.
+
+    Shows the current page title. The loading bar sits at the
+    very top — it fills during HTMX requests and resets after.
+    Controlled by app.js (htmx:beforeRequest / htmx:afterRequest).
+#}
+
+<header class="h-16 bg-white border-b border-gray-200 flex items-center px-6 shrink-0 relative">
+
+    {# Loading bar — sits at the very top of the header, 2px tall #}
+    <div id="loading-bar"
+         class="absolute top-0 left-0 h-0.5 bg-blue-600 transition-all duration-300 ease-out"
+         style="width: 0%">
+    </div>
+
+    {# Page title — passed as variable from each page route #}
+    <h1 class="text-lg font-semibold text-gray-900">
+        {{ page_title | default("Dashboard") }}
+    </h1>
+
+    {# Right side — placeholder for future actions (search, notifications) #}
+    <div class="ml-auto flex items-center gap-3">
+        {# Future: search bar, notification bell, etc. #}
+    </div>
+
+</header>
