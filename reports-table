@@ -1,0 +1,138 @@
+{% extends "layouts/base.html" %}
+
+{% block title %}Reports — Shoppervisor{% endblock %}
+
+{% block content %}
+<div class="w-full max-w-6xl mx-auto px-4 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8 animate-fade-in">
+        <div>
+            <h1 class="text-3xl font-bold tracking-tight">Reports</h1>
+            <p class="text-base-content/50 mt-1">Browse and access your analytics dashboards</p>
+        </div>
+
+    </div>
+
+    <!-- Reports Table Card -->
+    <div class="glass-card overflow-hidden animate-fade-in-up">
+        <!-- Table Header Bar -->
+        <div class="flex items-center justify-between px-6 py-4 border-b border-base-content/5">
+            <div class="flex items-center gap-2 text-sm text-base-content/50">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1" />
+                    <rect x="14" y="3" width="7" height="7" rx="1" />
+                    <rect x="3" y="14" width="7" height="7" rx="1" />
+                    <rect x="14" y="14" width="7" height="7" rx="1" />
+                </svg>
+                <span>All Reports</span>
+            </div>
+
+            <!-- Loading Spinner (HTMX indicator) -->
+            <span id="search-spinner" class="htmx-indicator loading loading-spinner loading-xs text-primary"></span>
+        </div>
+
+        <!-- Table with Client-Side JS filters -->
+        <div class="overflow-x-auto">
+            <table class="table table-zebra w-full" id="reports-table">
+                <thead>
+                    <tr class="text-xs uppercase tracking-wider text-base-content/40 border-b border-base-content/5">
+                        <!-- Column 1: Report Name Filter -->
+                        <th class="font-semibold pl-6 align-top">
+                            <div class="mb-2">Report</div>
+                            <input type="text" id="filter-name" placeholder="Search reports..." class="input input-xs input-bordered w-full max-w-[200px] font-normal normal-case bg-base-100 filter-input">
+                        </th>
+                        
+                        <!-- Column 2: Type Filter -->
+                        <th class="font-semibold align-top">
+                            <div class="mb-2">Type</div>
+                            <select id="filter-type" class="select select-xs select-bordered w-full max-w-[120px] font-normal normal-case bg-base-100 filter-input">
+                                <option value="">All Types</option>
+                                <option value="dashboard">Dashboard</option>
+                                <option value="paginated">Paginated</option>
+                                <option value="kpi">KPI</option>
+                                <option value="dataset">Dataset</option>
+                                <option value="report">Report</option>
+                            </select>
+                        </th>
+                        
+                        <!-- Column 3: Workspace Filter -->
+                        <th class="font-semibold align-top">
+                            <div class="mb-2">Workspace</div>
+                            <input type="text" id="filter-workspace" placeholder="Filter workspace..." class="input input-xs input-bordered w-full max-w-[150px] font-normal normal-case bg-base-100 filter-input">
+                        </th>
+                        
+                        <!-- Column 4: No Filter -->
+                        <th class="font-semibold align-top">
+                            <div class="mb-2 mt-1">Last Updated</div>
+                        </th>
+                        
+                        <!-- Column 5: Action (No Filter) -->
+                        <th class="font-semibold text-right pr-6 align-top">
+                            <div class="mb-2 mt-1">Action</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="reports-table-body" hx-get="/api/v1/reports" hx-trigger="load" hx-swap="innerHTML"
+                    hx-indicator="#table-loading">
+                    <!-- HTMX will populate this from the backend -->
+                    <!-- Skeleton loading state shown initially -->
+                    <tr id="table-loading" class="htmx-indicator">
+                        <td colspan="5" class="text-center py-16">
+                            <span class="loading loading-dots loading-lg text-primary"></span>
+                            <p class="text-base-content/40 text-sm mt-3">Loading reports…</p>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    // Grab inputs
+    const nameInput = document.getElementById("filter-name");
+    const typeSelect = document.getElementById("filter-type");
+    const workspaceInput = document.getElementById("filter-workspace");
+    
+    function applyFilters() {
+        const nameVal = nameInput.value.toLowerCase();
+        const typeVal = typeSelect.value.toLowerCase();
+        const workspaceVal = workspaceInput.value.toLowerCase();
+
+        // Target the table rows
+        const rows = document.querySelectorAll("#reports-table-body tr");
+        
+        rows.forEach(row => {
+            // Ignore the HTMX loading row or empty state rows
+            if (row.id === "table-loading" || row.querySelector('td[colspan]')) return;
+            
+            // Standard JS table traversal using cell indexes
+            const rowName = row.cells[0].textContent.toLowerCase();
+            const rowType = row.cells[1].textContent.toLowerCase();
+            const rowWorkspace = row.cells[2].textContent.toLowerCase();
+            
+            // Check matches
+            const matchName = rowName.includes(nameVal);
+            const matchType = typeVal === "" || rowType.includes(typeVal);
+            const matchWorkspace = rowWorkspace.includes(workspaceVal);
+            
+            // Toggle display
+            if (matchName && matchType && matchWorkspace) {
+                row.style.display = ""; // shows it (defaults back to table-row)
+            } else {
+                row.style.display = "none"; // hides it
+            }
+        });
+    }
+
+    // Attach listeners to trigger standard JS filtering whenever the inputs change
+    nameInput.addEventListener("input", applyFilters);
+    typeSelect.addEventListener("change", applyFilters);
+    workspaceInput.addEventListener("input", applyFilters);
+});
+</script>
+{% endblock %}
