@@ -1,0 +1,72 @@
+<!-- Navbar -->
+<nav class="navbar bg-base-100/80 backdrop-blur-xl border-b border-base-content/5 sticky top-0 z-50 px-4 lg:px-8">
+    <div class="navbar-start">
+        <a href="/" class="flex items-center gap-2.5 group">
+            <!-- Custom Logo Image -->
+            <img src="/public/images/logo.png" alt="Shoppervisor Logo" class="w-9 h-9 object-contain rounded-lg shadow-lg shadow-primary/20 group-hover:shadow-primary/40 transition-shadow duration-300">
+            <span class="text-lg font-bold tracking-tight">
+                <span class="text-base-content">Shopper</span><span class="text-primary">visor</span>
+            </span>
+        </a>
+    </div>
+
+    <div class="navbar-end gap-2">
+        {% if user %}
+        <!-- Authenticated: show reports link + user menu -->
+        <a href="/reports" class="btn btn-ghost btn-sm font-medium text-base-content/70 hover:text-base-content">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+            </svg>
+            Reports
+        </a>
+
+        <div class="dropdown dropdown-end">
+            <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+                <div class="bg-primary/20 text-primary rounded-full w-9">
+                    <span class="text-sm font-semibold">{{ user.initials | default("U") }}</span>
+                </div>
+            </div>
+            <ul tabindex="0"
+                class="dropdown-content menu bg-base-200 rounded-xl z-[1] w-56 p-2 shadow-2xl border border-base-content/5 mt-2">
+                <li class="menu-title px-3 pt-2 pb-1">
+                    <span class="text-xs text-base-content/50">Signed in as</span>
+                </li>
+                <li class="px-3 pb-2">
+                    <span class="text-sm font-medium text-base-content block pointer-events-none">{{ user.name |
+                        default("User") }}</span>
+                </li>
+                <li>
+                    <hr class="my-1 border-base-content/5">
+                </li>
+                <li>
+                    <a href="/auth/logout" class="text-error/80 hover:text-error hover:bg-error/10">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+                            <polyline points="16 17 21 12 16 7" />
+                            <line x1="21" y1="12" x2="9" y2="12" />
+                        </svg>
+                        Sign out
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% else %}
+        <!-- Unauthenticated: show Sign In -->
+        <a href="/login"
+            class="btn btn-primary btn-sm font-semibold gap-2 shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-shadow duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
+            </svg>
+            Sign In
+        </a>
+        {% endif %}
+    </div>
+</nav>
