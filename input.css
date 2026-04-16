@@ -1,0 +1,162 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+@source "../app";
+@source "../layouts";
+@source "../partials";
+
+@theme {
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+/* ===== Custom Base Styles ===== */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply font-sans antialiased;
+  }
+}
+
+/* ===== Custom Component Styles ===== */
+@layer components {
+  /* Glassmorphism card */
+  .glass-card {
+    @apply bg-base-200/60 backdrop-blur-xl border border-base-content/5 rounded-2xl shadow-2xl;
+  }
+
+  /* Gradient text utility */
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-secondary;
+  }
+
+  /* Animated glow ring */
+  .glow-ring {
+    @apply ring-2 ring-primary/30 ring-offset-2 ring-offset-base-100;
+  }
+
+  /* Subtle hover lift */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-xl shadow-primary/10;
+  }
+
+  /* Report type badge */
+  .report-badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+
+  /* Loading skeleton pulse */
+  .skeleton-pulse {
+    @apply animate-pulse bg-base-300 rounded;
+  }
+
+  /* Microsoft button style */
+  .btn-microsoft {
+    @apply btn btn-lg gap-3 bg-[#2F2F2F] hover:bg-[#3b3b3b] text-white border-none
+           font-semibold text-base normal-case rounded-lg px-8
+           transition-all duration-200 ease-out
+           hover:shadow-lg hover:shadow-black/30;
+  }
+}
+
+/* ===== Custom Utilities ===== */
+@layer utilities {
+  /* Fade-in animation */
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in-delay {
+    animation: fadeIn 0.5s ease-out 0.2s forwards;
+    opacity: 0;
+  }
+
+  .animate-slide-in-right {
+    animation: slideInRight 0.4s ease-out forwards;
+  }
+}
+
+/* ===== Keyframes ===== */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== HTMX Loading Indicator ===== */
+.htmx-indicator {
+  display: none;
+}
+.htmx-request .htmx-indicator {
+  display: inline-flex;
+}
+.htmx-request.htmx-indicator {
+  display: inline-flex;
+}
+
+/* ===== Toast Notification Animations ===== */
+.toast-item {
+  opacity: 0;
+  transform: translateX(100%) scale(0.95);
+  transition: none;
+}
+
+.toast-item.toast-enter {
+  animation: toastSlideIn 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.toast-item.toast-exit {
+  animation: toastSlideOut 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes toastSlideOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+}
