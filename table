@@ -1,0 +1,77 @@
+<!-- Table Wrapper (Adds glassmorphism and rounded corners) -->
+<div class="bg-base-100 rounded-xl shadow-lg border border-base-content/5 overflow-hidden">
+  
+  <div class="overflow-x-auto">
+    <!-- The Table -->
+    <table class="table table-zebra table-sm sm:table-md w-full">
+      
+      <!-- Table Header (Stays outside the loop) -->
+      <thead class="bg-base-200/50 text-base-content/60 text-xs uppercase tracking-wider">
+        <tr>
+          <th class="pl-6 py-4">Report Name</th>
+          <th class="py-4">Client</th>
+          <th class="py-4">Workspace</th>
+          <th class="py-4 text-right pr-6">Action</th>
+        </tr>
+      </thead>
+
+      <!-- Table Body (The Loop) -->
+      <tbody class="text-sm">
+        
+        {% for report in reports %}
+        <tr class="hover:bg-base-content/5 transition-colors">
+          
+          <!-- Column 1: Report Name (Highlighted/Bold) -->
+          <td class="pl-6 py-4">
+            <div class="flex items-center gap-3">
+              <!-- Optional: A nice little icon for the report -->
+              <div class="w-8 h-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 3v18h18" />
+                  <rect x="7" y="10" width="3" height="8" rx="0.5" />
+                  <rect x="14" y="6" width="3" height="12" rx="0.5" />
+                </svg>
+              </div>
+              <span class="font-semibold text-base-content">{{ report.report_name }}</span>
+            </div>
+          </td>
+
+          <!-- Column 2: Client -->
+          <td class="py-4 text-base-content/70">
+            {{ report.client }}
+          </td>
+
+          <!-- Column 3: Workspace -->
+          <td class="py-4">
+            <span class="badge badge-ghost badge-sm font-medium">
+              {{ report.workspace }}
+            </span>
+          </td>
+
+          <!-- Column 4: Action Button -->
+          <td class="py-4 pr-6 text-right">
+            <a href="/reports/{{ report.id }}" class="btn btn-primary btn-outline btn-xs shadow-sm">
+              View Report
+            </a>
+          </td>
+          
+        </tr>
+        {% endfor %}
+
+      </tbody>
+    </table>
+  </div>
+  
+  <!-- Empty State (Shows if the list is empty) -->
+  {% if not reports %}
+  <div class="py-12 text-center text-base-content/40">
+      <svg xmlns="http://www.w3.org/2000/svg" class="w-12 h-12 mx-auto mb-3 opacity-20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="8" x2="12" y2="12" />
+          <line x1="12" y1="16" x2="12.01" y2="16" />
+      </svg>
+      <p class="text-sm">No reports found.</p>
+  </div>
+  {% endif %}
+
+</div>
