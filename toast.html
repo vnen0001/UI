@@ -1,0 +1,226 @@
+<!-- Toast Container — fixed in the bottom-right corner, sits above all content -->
+<div id="toast-container"
+     style="position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999; display:flex; flex-direction:column-reverse; gap:0.75rem; pointer-events:none; max-width:24rem; width:100%;">
+</div>
+
+<style>
+/* ===== Toast Notification Animations ===== */
+.toast-item {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+    pointer-events: auto;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-radius: 0.75rem;
+    border: 1px solid;
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+    position: relative;
+    overflow: hidden;
+}
+
+.toast-item.toast-enter {
+    animation: toastSlideIn 0.4s cubic-bezier(0.21, 1.02, 0.73, 1) forwards;
+}
+
+.toast-item.toast-exit {
+    animation: toastSlideOut 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards;
+}
+
+@keyframes toastSlideIn {
+    from { opacity: 0; transform: translateX(100%) scale(0.95); }
+    to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+@keyframes toastSlideOut {
+    from { opacity: 1; transform: translateX(0) scale(1); }
+    to   { opacity: 0; transform: translateX(100%) scale(0.95); }
+}
+
+/* Toast level themes — using DaisyUI CSS variables */
+.toast-success {
+    background: oklch(var(--su) / 0.1);
+    border-color: oklch(var(--su) / 0.3);
+    color: oklch(var(--su));
+}
+.toast-success .toast-progress { background: oklch(var(--su)); }
+
+.toast-error {
+    background: oklch(var(--er) / 0.1);
+    border-color: oklch(var(--er) / 0.3);
+    color: oklch(var(--er));
+}
+.toast-error .toast-progress { background: oklch(var(--er)); }
+
+.toast-warning {
+    background: oklch(var(--wa) / 0.1);
+    border-color: oklch(var(--wa) / 0.3);
+    color: oklch(var(--wa));
+}
+.toast-warning .toast-progress { background: oklch(var(--wa)); }
+
+.toast-info {
+    background: oklch(var(--in) / 0.1);
+    border-color: oklch(var(--in) / 0.3);
+    color: oklch(var(--in));
+}
+.toast-info .toast-progress { background: oklch(var(--in)); }
+
+.toast-msg {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: oklch(var(--bc));
+    flex: 1;
+    padding-top: 1px;
+}
+
+.toast-dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.4;
+    padding: 2px;
+    margin: -2px -2px 0 0;
+    color: oklch(var(--bc));
+    transition: opacity 0.15s;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.toast-dismiss:hover {
+    opacity: 1;
+}
+
+.toast-progress-wrap {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    overflow: hidden;
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+
+.toast-progress {
+    height: 100%;
+    width: 100%;
+    opacity: 0.4;
+    border-radius: 0 0 0.75rem 0.75rem;
+}
+</style>
+
+<script>
+/**
+ * ─── HTMX Toast Notification System ───
+ *
+ * BACKEND USAGE:
+ *   Send the `HX-Trigger` response header with a `showToast` event.
+ *
+ * ● Python / FastAPI example:
+ *
+ *     import json
+ *     from fastapi.responses import HTMLResponse
+ *
+ *     @app.post("/some-action")
+ *     async def some_action():
+ *         response = HTMLResponse("<p>Done</p>")
+ *         response.headers["HX-Trigger"] = json.dumps({
+ *             "showToast": {
+ *                 "message": "Item saved successfully!",
+ *                 "level": "success"       # success | error | warning | info
+ *             }
+ *         })
+ *         return response
+ *
+ * ● Supported levels:   success  |  error  |  warning  |  info (default)
+ * ● Optional duration:  "duration": 5000   (milliseconds, default 4000)
+ */
+
+// Icon SVGs for each toast level
+const TOAST_ICONS = {
+    success: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" style="width:1.25rem;height:1.25rem;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
+    error: `<svg xmlns="http://www.w3.org/2000/svg" style="width:1.25rem;height:1.25rem;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>`,
+    warning: `<svg xmlns="http://www.w3.org/2000/svg" style="width:1.25rem;height:1.25rem;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`,
+    info: `<svg xmlns="http://www.w3.org/2000/svg" style="width:1.25rem;height:1.25rem;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>`
+};
+
+function createToast({ message = '', level = 'info', duration = 4000 } = {}) {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const validLevels = ['success', 'error', 'warning', 'info'];
+    const safeLevel = validLevels.includes(level) ? level : 'info';
+    const icon = TOAST_ICONS[safeLevel];
+
+    // Build the toast element
+    const toast = document.createElement('div');
+    toast.className = `toast-item toast-${safeLevel}`;
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+        ${icon}
+        <span class="toast-msg">${message}</span>
+        <button class="toast-dismiss" aria-label="Dismiss">
+            <svg xmlns="http://www.w3.org/2000/svg" style="width:0.875rem;height:0.875rem" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+            </svg>
+        </button>
+        <div class="toast-progress-wrap">
+            <div class="toast-progress" style="width:100%;transition:width ${duration}ms linear"></div>
+        </div>
+    `;
+
+    // Append to container
+    container.appendChild(toast);
+
+    // Trigger entrance animation (allow layout to settle first)
+    requestAnimationFrame(() => {
+        toast.classList.add('toast-enter');
+        // Start progress bar countdown
+        requestAnimationFrame(() => {
+            const bar = toast.querySelector('.toast-progress');
+            if (bar) bar.style.width = '0%';
+        });
+    });
+
+    // Dismiss function
+    function dismiss() {
+        toast.classList.remove('toast-enter');
+        toast.classList.add('toast-exit');
+        toast.addEventListener('animationend', () => toast.remove(), { once: true });
+    }
+
+    // Auto-dismiss after duration
+    const timeout = setTimeout(dismiss, duration);
+
+    // Manual dismiss on click
+    toast.querySelector('.toast-dismiss').addEventListener('click', () => {
+        clearTimeout(timeout);
+        dismiss();
+    });
+
+    // Pause progress bar on hover
+    toast.addEventListener('mouseenter', () => {
+        const bar = toast.querySelector('.toast-progress');
+        if (bar) bar.style.transitionPlayState = 'paused';
+    });
+    toast.addEventListener('mouseleave', () => {
+        const bar = toast.querySelector('.toast-progress');
+        if (bar) bar.style.transitionPlayState = 'running';
+    });
+}
+
+// ─── Listen for the HTMX "showToast" event ───
+document.body.addEventListener('showToast', function (event) {
+    const detail = event.detail || {};
+    createToast({
+        message: detail.message || detail.value || 'Notification',
+        level: detail.level || 'info',
+        duration: detail.duration || 4000
+    });
+});
+</script>
